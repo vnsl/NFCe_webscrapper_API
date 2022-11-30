@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 
 export class NFCeController {
     async getInfo(req: Request, res: Response) {
-        res.send("Express working");
+        
         const { NFCeCode } = req.body;
 
         if(!NFCeCode) {
