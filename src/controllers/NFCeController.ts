@@ -3,6 +3,11 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 export class NFCeController {
+
+    classify(items: any[]) {
+
+    }
+
     async getInfo(req: Request, res: Response) {
         
         const { NFCeCode } = req.body;
@@ -18,33 +23,58 @@ export class NFCeController {
                 const html = response.data;
                 const loadedHtml = cheerio.load(html);
             
-                const info: any[] = [];
+                const info: any = {
+                    storeName: '',
+                    date: '',
+                    numberitems: 0,
+                    totalValue: 0,
+                    taxesPaid: 0,
+                    items: []
+                };
             
                 loadedHtml('.list-group-item', '#collapse1').each(function(this: any) {
                     const item = loadedHtml(this).children().find('p').text();
                     const totalValue = loadedHtml(this).find('span').text();
             
-                    info.push({
+                    info.items.push({
                         item,
                         totalValue
                     })
                 })
             
-                info.forEach((item, index) => {
-                    if(index < info.length-4) {
+                info.items.forEach((item: any, index: any) => {
+                    if(index < info.items.length-4) {
                         item.item = item.item.slice(0, item.item.lastIndexOf('-')-1);
                         const splitedValue = item.totalValue.split('\n');
                         item.quantity = Number(splitedValue[2].trim());
                         item.unitaryValue = Number(splitedValue[6].slice(0, splitedValue[6].indexOf(',')+3).trim().replace(/,/g, '.'));
                         item.totalValue = Number(splitedValue[6].slice(splitedValue[6].indexOf(',')+3, splitedValue[6].length).trim().replace(/,/g, '.'));
-                    } else if (index === info.length-2) {
+                    } else if (index === info.items.length-2) {
                         item.item = item.item.slice(item.item.lastIndexOf('o')+1, item.item.length).replace(/,/g, '.')
                         item.value = Number(item.item)
                     } else {
                         item.item = item.item.slice(item.item.lastIndexOf('\n')+20, item.item.length).trim().replace(/,/g, '.')
-                        const number = item.item;
                         item.value = Number(item.item)
                     }
+                })
+
+                const length = info.items.length
+                info.taxesPaid = info.items[length-1].value;
+                info.totalValue = info.items[length-3].value;
+                info.numberitems = info.items[length-4].value;
+
+                info.items.splice(-4);
+
+                loadedHtml('#heading1').each(function(this: any) {
+                    const item = loadedHtml(this).children().text();
+                    info.storeName = item.slice(0, item.lastIndexOf('CNPJ')).trim();
+                })
+
+                loadedHtml('.list-group-item', '#collapse6').each(function(this: any) {
+                    const item = loadedHtml(this).children().find('p').text();
+                    const index = item.lastIndexOf('Emissão: ')+9;
+                    info.date = item.slice(index, index+10);
+            
                 })
 
                 return res.status(200).json(info);
