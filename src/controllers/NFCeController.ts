@@ -24,9 +24,10 @@ export class NFCeController {
                 const loadedHtml = cheerio.load(html);
 
                 const info: any = {
+                    code: NFCeCode,
                     storeName: '',
                     date: '',
-                    numberitems: 0,
+                    numberItems: 0,
                     totalValue: 0,
                     taxesPaid: 0,
                     items: [],
