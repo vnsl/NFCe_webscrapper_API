@@ -13,7 +13,7 @@ export class NFCeController {
         const { NFCeCode } = req.body;
 
         if(!NFCeCode) {
-            return res.status(400).json({message: 'NFCeCode is required'});
+            return res.status(400).json({message: 'NFCe Code is required'});
         }
 
         try {
@@ -22,15 +22,27 @@ export class NFCeController {
             axios(url).then((response: any) => {
                 const html = response.data;
                 const loadedHtml = cheerio.load(html);
-            
+
                 const info: any = {
                     storeName: '',
                     date: '',
                     numberitems: 0,
                     totalValue: 0,
                     taxesPaid: 0,
-                    items: []
+                    items: [],
+                    invalid: false,
                 };
+
+                loadedHtml('.alert').each(function(this:any) {
+                    const alert = loadedHtml(this).children().text();
+                    if(alert.includes('inválida' || 'inválido')) {
+                       info.invalid = true;
+                    }
+                })
+
+                if(info.invalid) {
+                    return res.status(404).json({message: 'NFCe Not Found'})
+                }
             
                 loadedHtml('.list-group-item', '#collapse1').each(function(this: any) {
                     const item = loadedHtml(this).children().find('p').text();
@@ -43,6 +55,7 @@ export class NFCeController {
                 })
             
                 info.items.forEach((item: any, index: any) => {
+                    item.key = index+1;
                     if(index < info.items.length-4) {
                         item.item = item.item.slice(0, item.item.lastIndexOf('-')-1);
                         const splitedValue = item.totalValue.split('\n');
