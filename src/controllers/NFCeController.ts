@@ -83,7 +83,7 @@ export class NFCeController {
                 const length = info.items.length
                 info.taxesPaid = info.items[length-1].value;
                 info.totalValue = info.items[length-3].value;
-                info.numberitems = info.items[length-4].value;
+                info.numberItems = info.items[length-4].value;
 
                 info.items.splice(-4);
 
