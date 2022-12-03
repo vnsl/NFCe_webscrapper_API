@@ -18,10 +18,16 @@ export class NFCeController {
 
         try {
             const baseUrl = 'https://ww1.receita.fazenda.df.gov.br/DecVisualizador/';
-            const url = baseUrl+'Nfce/qrcode?p='+NFCeCode;
-            const url2 = baseUrl+'Visualiza/'+NFCeCode+'?token=4d53bce03ec34c0a911182d4c228ee6c:Q42C3ELwYQyH4QJg4tleV4y//XW/BeGKma6Dbtoo4/M=:689a0928a71e45599f1f775c31607de6:1670071196';
+
+            let url: string = '';
+
+            if(NFCeCode.length === 44) {
+                url = baseUrl+'Visualiza/'+NFCeCode+'?token=4d53bce03ec34c0a911182d4c228ee6c:Q42C3ELwYQyH4QJg4tleV4y//XW/BeGKma6Dbtoo4/M=:689a0928a71e45599f1f775c31607de6:1670071196';
+            } else {
+                url = baseUrl+'Nfce/qrcode?p='+NFCeCode;
+            }
             
-            axios(url2).then((response: any) => {
+            axios(url).then((response: any) => {
                 const html = response.data;
                 const loadedHtml = cheerio.load(html);
 
@@ -60,7 +66,7 @@ export class NFCeController {
                 info.items.forEach((item: any, index: any) => {
                     item.key = index+1;
                     if(index < info.items.length-4) {
-                        item.item = item.item.slice(0, item.item.lastIndexOf('-')-1);
+                        item.item = item.item.slice(0, item.item.indexOf('\n'));
                         const splitedValue = item.totalValue.split('\n');
                         item.quantity = Number(splitedValue[2].trim());
                         item.unitaryValue = Number(splitedValue[6].slice(0, splitedValue[6].indexOf(',')+3).trim().replace(/,/g, '.'));
