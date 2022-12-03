@@ -17,9 +17,11 @@ export class NFCeController {
         }
 
         try {
-            const url = 'https://ww1.receita.fazenda.df.gov.br/DecVisualizador/Nfce/qrcode?p='+NFCeCode;
-
-            axios(url).then((response: any) => {
+            const baseUrl = 'https://ww1.receita.fazenda.df.gov.br/DecVisualizador/';
+            const url = baseUrl+'Nfce/qrcode?p='+NFCeCode;
+            const url2 = baseUrl+'Visualiza/'+NFCeCode+'?token=4d53bce03ec34c0a911182d4c228ee6c:Q42C3ELwYQyH4QJg4tleV4y//XW/BeGKma6Dbtoo4/M=:689a0928a71e45599f1f775c31607de6:1670071196';
+            
+            axios(url2).then((response: any) => {
                 const html = response.data;
                 const loadedHtml = cheerio.load(html);
 
